@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, 36-sonarcloud-connect-sonarcloud-to-the-project]
+    branches: [main, develop]
   pull_request:
     branches: [main, develop]
 
@@ -15,10 +15,10 @@ jobs:
 
       # - name: Run DB
 
-      - name: 'Install Node.js v.14'
+      - name: 'Install Node.js v.18'
         uses: actions/setup-node@v3
         with:
-          node-version: 14 # Чому 14 нода
+          node-version: 18
 
       - name: 'Start MongoDB'
         uses: supercharge/mongodb-github-action@1.12.0
@@ -67,37 +67,12 @@ jobs:
           JWT_CONFIRM_EXPIRES_IN=24h
           " > .env.local
 
-      - name: 'Show .env.local'
-        run: cat .env.local
-
       - name: 'Run Tests'
         run: npm run test
         env:
           CI: true
           NODE_OPTIONS: --max_old_space_size=4096
         continue-on-error: true
-
-      #     MONGODB_URL: mongodb://${{secrets.MONGODB_USER}}:${{secrets.MONGODB_PASS}}@localhost:27017/space2study?authSource=admin
-      #     JWT_ACCESS_SECRET: ${{secrets.JWT_ACCESS_SECRET}}
-      #     JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
-      #     JWT_RESET_SECRET: ${{secrets.JWT_RESET_SECRET}}
-      #     JWT_CONFIRM_SECRET: ${{secrets.JWT_CONFIRM_SECRET}}
-      #     JWT_ACCESS_EXPIRES_IN: ${{secrets.JWT_ACCESS_EXPIRES_IN}}
-      #     JWT_REFRESH_EXPIRES_IN: ${{secrets.JWT_REFRESH_EXPIRES_IN}}
-      #     JWT_RESET_EXPIRES_IN: ${{secrets.JWT_RESET_EXPIRES_IN}}
-      #     JWT_CONFIRM_EXPIRES_IN: ${{secrets.JWT_CONFIRM_EXPIRES_IN}}
-      #     CLIENT_URL: ${{secrets.CLIENT_URL}}
-      #     SERVER_URL: ${{secrets.SERVER_URL}}
-      #     SERVER_PORT: ${{secrets.SERVER_PORT}}
-      #     MAIL_USER: ${{secrets.MAIL_USER}}
-      #     MAIL_PASS: ${{secrets.MAIL_PASS}}
-      #     MAIL_FIRSTNAME: ${{secrets.MAIL_FIRSTNAME}}
-      #     MAIL_LASTNAME: ${{secrets.MAIL_LASTNAME}}
-      #     GMAIL_CLIENT_ID: ${{secrets.GMAIL_CLIENT_ID}}
-      #     GMAIL_CLIENT_SECRET: ${{secrets.GMAIL_CLIENT_SECRET}}
-      #     GMAIL_REFRESH_TOKEN: ${{secrets.GMAIL_REFRESH_TOKEN}}
-      #     GMAIL_REDIRECT_URI: ${{secrets.GMAIL_REDIRECT_URI}}
-      #     COOKIE_DOMAIN: ${{secrets.COOKIE_DOMAIN}}
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@master
