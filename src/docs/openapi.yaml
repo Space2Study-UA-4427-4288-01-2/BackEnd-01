@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: Space2Study-UA API
+  version: '1.0.0'
+  description: 'API docs for Space2Study UA'
+servers:
+  - url: http://localhost:8080
+    description: Local dev
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /auth/confirm-email/{token}:
+    get:
+      summary: Confirm user email
+      description: Confirms the email address of a user using the token sent via email
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Confirmation token sent to user email
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email confirmed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: 64f8b9e1f0e123456789abcd
+                  email:
+                    type: string
+                    example: user@example.com
+                  confirmed:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid or expired confirm token
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found

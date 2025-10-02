@@ -12,7 +12,7 @@ describe('Auth controller', () => {
   let app, server, signupResponse
 
   beforeAll(async () => {
-    ; ({ app, server } = await serverInit())
+    ;({ app, server } = await serverInit())
   })
 
   beforeEach(async () => {
@@ -113,5 +113,81 @@ describe('Auth controller', () => {
 
       expectError(400, errors.BAD_RESET_TOKEN, response)
     })
+  })
+})
+
+describe('ConfirmEmail endpoint', () => {
+  let confirmToken
+  beforeEach(() => {
+    const { userId, email, role } = signupResponse.body
+    confirmToken = tokenService.generateConfirmToken({ id: userId, role })
+
+    Token.findOne = jest.fn().mockResolvedValue({
+      userId,
+      token: confirmToken,
+      type: 'confirm',
+      save: jest.fn().mockResolvedValue(confirmToken)
+    })
+  })
+
+  afterEach(() => jest.resetAllMocks())
+
+  it('should confirm email successfully and return 200', async () => {
+    const res = await app.get(`/auth/confirm-email/${confirmToken}`)
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        userId: signupResponse.body.userId,
+        email: signupResponse.body.userEmail,
+        confirmed: true
+      })
+    )
+  })
+
+  it('should throw 400 BAD_CONFIRM_TOKEN for invalid token', async () => {
+    const res = await app.get('/auth/confirm-email/invalid-token')
+    expectError(400, errors.BAD_CONFIRM_TOKEN, res)
+  })
+
+  it('should throw 404 USER_NOT_FOUND if user does not exist', async () => {
+    const authService = require('~/services/auth')
+    jest.spyOn(authService, 'confirmEmail').mockImplementation(() => {
+      throw createError(404, errors.USER_NOT_FOUND)
+    })
+
+    const res = await app.get(`/auth/confirm-email/${confirmToken}`)
+    expectError(404, errors.USER_NOT_FOUND, res)
+  })
+})
+
+describe('Google Auth endpoint', () => {
+  const googleUser = {
+    email: 'google@test.com',
+    firstName: 'Google',
+    lastName: 'User',
+    role: 'student'
+  }
+
+  it('should login/signup successfully with Google and return tokens', async () => {
+    const authService = require('~/services/auth')
+    jest.spyOn(authService, 'login').mockResolvedValue({
+      accessToken: 'access_token',
+      refreshToken: 'refresh_token'
+    })
+
+    const res = await app.post('/auth/google').send({ tokenId: 'google_token' })
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toHaveProperty('accessToken')
+    expect(res.body).not.toHaveProperty('refreshToken')
+  })
+
+  it('should throw USER_NOT_FOUND if Google returns invalid user', async () => {
+    const authService = require('~/services/auth')
+    jest.spyOn(authService, 'login').mockImplementation(() => {
+      throw createError(404, errors.USER_NOT_FOUND)
+    })
+
+    const res = await app.post('/auth/google').send({ tokenId: 'invalid_token' })
+    expectError(404, errors.USER_NOT_FOUND, res)
   })
 })
