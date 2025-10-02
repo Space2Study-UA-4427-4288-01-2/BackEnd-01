@@ -9,6 +9,15 @@ const signupValidationSchema = require('~/validation/schemas/signup')
 const { loginValidationSchema } = require('~/validation/schemas/login')
 const resetPasswordValidationSchema = require('~/validation/schemas/resetPassword')
 const forgotPasswordValidationSchema = require('~/validation/schemas/forgotPassword')
+const rateLimit = require('express-rate-limit')
+
+const googleAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'RATE_LIMIT_EXCEEDED', message: 'Too many Google auth attempts' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
 
 router.post(
   '/signup',
@@ -17,6 +26,7 @@ router.post(
   asyncWrapper(authController.signup)
 )
 router.post('/login', validationMiddleware(loginValidationSchema), asyncWrapper(authController.login))
+router.post('/google-auth', googleAuthLimiter, asyncWrapper(authController.googleAuth))
 router.post('/logout', asyncWrapper(authController.logout))
 router.get('/refresh', asyncWrapper(authController.refreshAccessToken))
 router.post(
