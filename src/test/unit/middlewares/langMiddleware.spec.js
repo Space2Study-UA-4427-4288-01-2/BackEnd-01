@@ -15,7 +15,7 @@ describe('langMiddleware', () => {
   })
 
   it('should set req.lang to the accepted language if valid', () => {
-    req.acceptsLanguages.mockReturnValue(APP_LANG_ENUM[0]) // наприклад 'en'
+    req.acceptsLanguages.mockReturnValue(APP_LANG_ENUM[0])
 
     langMiddleware(req, res, next)
 
