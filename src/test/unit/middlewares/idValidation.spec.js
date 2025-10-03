@@ -1,4 +1,4 @@
-const validationMiddleware = require('~/middlewares/idValidationMiddleware')
+const idValidation = require('~/middlewares/idValidation')
 const { BODY_IS_NOT_DEFINED } = require('~/consts/errors')
 const { validateRequired, validateFunc } = require('~/utils/validationHelper')
 
@@ -15,7 +15,7 @@ jest.mock('~/utils/errorsHelper', () => ({
   createError: jest.fn((status, msg) => ({ status, msg }))
 }))
 
-describe('validationMiddleware', () => {
+describe('idValidation', () => {
   let req, res, next, schema
 
   beforeEach(() => {
@@ -37,7 +37,7 @@ describe('validationMiddleware', () => {
   it('should throw BODY_IS_NOT_DEFINED if body is missing', () => {
     req.body = undefined
 
-    expect(() => validationMiddleware(schema)(req, res, next)).toThrow({
+    expect(() => idValidation(schema)(req, res, next)).toThrow({
       status: 422,
       msg: BODY_IS_NOT_DEFINED
     })
@@ -48,7 +48,7 @@ describe('validationMiddleware', () => {
   it('should call validateRequired and validateFunc for schema fields', () => {
     req.body = { id: 'abcde' }
 
-    validationMiddleware(schema)(req, res, next)
+    idValidation(schema)(req, res, next)
 
     expect(validateRequired).toHaveBeenCalledWith('id', true, 'abcde')
 
@@ -62,7 +62,7 @@ describe('validationMiddleware', () => {
   it('should skip validateFunc calls if field not present in body', () => {
     req.body = {}
 
-    validationMiddleware(schema)(req, res, next)
+    idValidation(schema)(req, res, next)
 
     expect(validateRequired).toHaveBeenCalledWith('id', true, undefined)
     expect(validateFunc.isString).not.toHaveBeenCalled()
