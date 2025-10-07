@@ -6,6 +6,11 @@ const {
 const {
   tokenNames: { REFRESH_TOKEN, ACCESS_TOKEN }
 } = require('~/consts/auth')
+const {
+  MISSING_TOKEN,
+  TOKEN_NOT_VALID,
+  AUTHENTICATION_FAILED,
+} = require('~/consts/errors')
 
 const COOKIE_OPTIONS = {
   maxAge: oneDayInMs,
@@ -20,10 +25,7 @@ const googleAuth = async (req, res) => {
     const { token } = req.body
 
     if (!token) {
-      return res.status(422).json({
-        error: 'MISSING_TOKEN',
-        message: 'Google token is required'
-      })
+      return res.status(422).json(MISSING_TOKEN)
     }
 
     const tokens = await authService.googleAuth(token.credential)
@@ -43,16 +45,10 @@ const googleAuth = async (req, res) => {
     }
 
     if (error.message && (error.message.includes('Token used too early') || error.message.includes('Invalid token'))) {
-      return res.status(422).json({
-        error: 'TOKEN_NOT_VALID',
-        message: 'Google token is not valid'
-      })
+      return res.status(422).json(TOKEN_NOT_VALID)
     }
 
-    return res.status(401).json({
-      error: 'AUTHENTICATION_FAILED',
-      message: 'Google authentication failed'
-    })
+    return res.status(401).json(AUTHENTICATION_FAILED)
   }
 }
 

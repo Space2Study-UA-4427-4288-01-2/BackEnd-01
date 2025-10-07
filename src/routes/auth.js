@@ -5,6 +5,7 @@ const validationMiddleware = require('~/middlewares/validation')
 const langMiddleware = require('~/middlewares/appLanguage')
 
 const authController = require('~/controllers/auth')
+const { RATE_LIMIT_EXCEEDED } = require('~/consts/errors')
 const signupValidationSchema = require('~/validation/schemas/signup')
 const { loginValidationSchema } = require('~/validation/schemas/login')
 const resetPasswordValidationSchema = require('~/validation/schemas/resetPassword')
@@ -14,7 +15,7 @@ const rateLimit = require('express-rate-limit')
 const googleAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { error: 'RATE_LIMIT_EXCEEDED', message: 'Too many Google auth attempts' },
+  message: RATE_LIMIT_EXCEEDED,
   standardHeaders: true,
   legacyHeaders: false
 })
