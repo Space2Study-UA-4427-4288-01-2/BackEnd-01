@@ -6,7 +6,6 @@ const {
 const {
   tokenNames: { REFRESH_TOKEN, ACCESS_TOKEN }
 } = require('~/consts/auth')
-const { confirmEmail } = require('../services/auth')
 
 const COOKIE_OPTIONS = {
   maxAge: oneDayInMs,
