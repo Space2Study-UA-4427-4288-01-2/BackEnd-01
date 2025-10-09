@@ -1,71 +1,76 @@
-const idValidation = require('~/middlewares/idValidation')
-const { BODY_IS_NOT_DEFINED } = require('~/consts/errors')
-const { validateRequired, validateFunc } = require('~/utils/validationHelper')
+const mongoose = require('mongoose')
+const { INVALID_ID } = require('~/consts/errors')
+const { createError } = require('~/utils/errorsHelper')
 
-jest.mock('~/utils/validationHelper', () => ({
-  validateRequired: jest.fn(),
-  validateFunc: {
-    isString: jest.fn(),
-    minLength: jest.fn(),
-    maxLength: jest.fn()
+jest.mock('mongoose', () => ({
+  Types: {
+    ObjectId: {
+      isValid: jest.fn()
+    }
   }
 }))
 
 jest.mock('~/utils/errorsHelper', () => ({
-  createError: jest.fn((status, msg) => ({ status, msg }))
+  createError: jest.fn((status, msg) => {
+    const error = new Error(msg)
+    error.status = status
+    return error
+  })
 }))
 
+const idValidation = require('~/middlewares/idValidation')
+
 describe('idValidation', () => {
-  let req, res, next, schema
+  let req, res, next
 
   beforeEach(() => {
     res = {}
     next = jest.fn()
     req = {}
     jest.clearAllMocks()
-
-    schema = {
-      id: {
-        required: true,
-        isString: true,
-        minLength: 5,
-        maxLength: 10
-      }
-    }
   })
 
-  it('should throw BODY_IS_NOT_DEFINED if body is missing', () => {
-    req.body = undefined
+  it('should call next() for valid ObjectId', () => {
+    const validId = '507f1f77bcf86cd799439011'
 
-    expect(() => idValidation(schema)(req, res, next)).toThrow({
-      status: 422,
-      msg: BODY_IS_NOT_DEFINED
-    })
+    mongoose.Types.ObjectId.isValid.mockReturnValue(true)
+
+    idValidation(req, res, next, validId)
+
+    expect(mongoose.Types.ObjectId.isValid).toHaveBeenCalledWith(validId)
+    expect(next).toHaveBeenCalled()
+    expect(createError).not.toHaveBeenCalled()
+  })
+
+  it('should throw INVALID_ID for invalid ObjectId', () => {
+    const invalidId = 'invalid-id'
+
+    mongoose.Types.ObjectId.isValid.mockReturnValue(false)
+
+    expect(() => {
+      idValidation(req, res, next, invalidId)
+    }).toThrow()
+
+    expect(mongoose.Types.ObjectId.isValid).toHaveBeenCalledWith(invalidId)
+    expect(next).not.toHaveBeenCalled()
+    expect(createError).toHaveBeenCalledWith(400, INVALID_ID)
+  })
+
+  it('should throw INVALID_ID if id is missing', () => {
+    expect(() => {
+      idValidation(req, res, next, undefined)
+    }).toThrow()
 
     expect(next).not.toHaveBeenCalled()
+    expect(createError).toHaveBeenCalledWith(400, INVALID_ID)
   })
 
-  it('should call validateRequired and validateFunc for schema fields', () => {
-    req.body = { id: 'abcde' }
+  it('should throw INVALID_ID if id is null', () => {
+    expect(() => {
+      idValidation(req, res, next, null)
+    }).toThrow()
 
-    idValidation(schema)(req, res, next)
-
-    expect(validateRequired).toHaveBeenCalledWith('id', true, 'abcde')
-
-    expect(validateFunc.isString).toHaveBeenCalledWith('id', true, 'abcde')
-    expect(validateFunc.minLength).toHaveBeenCalledWith('id', 5, 'abcde')
-    expect(validateFunc.maxLength).toHaveBeenCalledWith('id', 10, 'abcde')
-
-    expect(next).toHaveBeenCalled()
-  })
-
-  it('should skip validateFunc calls if field not present in body', () => {
-    req.body = {}
-
-    idValidation(schema)(req, res, next)
-
-    expect(validateRequired).toHaveBeenCalledWith('id', true, undefined)
-    expect(validateFunc.isString).not.toHaveBeenCalled()
-    expect(next).toHaveBeenCalled()
+    expect(next).not.toHaveBeenCalled()
+    expect(createError).toHaveBeenCalledWith(400, INVALID_ID)
   })
 })
