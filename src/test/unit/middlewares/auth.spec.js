@@ -50,7 +50,7 @@ describe('AuthService Google login', () => {
     jest.clearAllMocks()
   })
 
-  it('Should allow login via Google (isFromGoogle = true)', async () => {
+  it('Should allow login via Google', async () => {
     authService.getUserByEmail = jest.fn().mockResolvedValue(user)
     authService.privateUpdateUser = jest.fn().mockResolvedValue(true)
     tokenService.generateTokens = jest.fn().mockReturnValue({
