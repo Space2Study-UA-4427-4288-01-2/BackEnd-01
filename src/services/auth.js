@@ -58,7 +58,7 @@ const authService = {
       id: _id,
       role: lastLoginAs ?? role[0],
       isFirstLogin,
-      lastLoginAs: lastLoginAs ?? role[0],
+      lastLoginAs: lastLoginAs ? lastLoginAs : role[0],
     })
     await tokenService.saveToken(_id, tokens.refreshToken, REFRESH_TOKEN)
 
