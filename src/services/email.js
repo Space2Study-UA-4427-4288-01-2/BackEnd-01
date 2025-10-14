@@ -18,7 +18,6 @@ const emailService = {
     }
 
     const langTemplate = templateToSend[language]
-
     const html = await emailTemplates.render(langTemplate.template, text)
 
     await sendMail({
