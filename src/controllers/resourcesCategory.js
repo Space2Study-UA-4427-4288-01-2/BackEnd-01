@@ -15,7 +15,8 @@ const getResourcesCategories = async (req, res) => {
   const { id: author } = req.user
   const { name, sort, skip, limit } = req.query
 
-  const nameRegex = name ? { $regex: name, $options: 'i' } : undefined
+  const escapedName = name?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const nameRegex = escapedName ? { $regex: escapedName, $options: 'i' } : undefined
   const match = getMatchOptions({ author, name: nameRegex })
   const sortOptions = getSortOptions(sort)
 
