@@ -7,13 +7,21 @@ const {
   INCORRECT_CREDENTIALS,
   BAD_RESET_TOKEN,
   BAD_REFRESH_TOKEN,
+  USER_NOT_FOUND,
+  INVALID_TOKEN_ISSUER,
+  EMAIL_NOT_VERIFIED,
+  MISSING_SUB_CLAIM,
   BAD_CONFIRM_TOKEN,
-  USER_NOT_FOUND
 } = require('~/consts/errors')
 const emailSubject = require('~/consts/emailSubject')
 const {
   tokenNames: { REFRESH_TOKEN, RESET_TOKEN, CONFIRM_TOKEN }
 } = require('~/consts/auth')
+const { OAuth2Client } = require('google-auth-library')
+const { config: { GMAIL_CLIENT_ID }} = require('~/configs/config')
+
+const client = new OAuth2Client(GMAIL_CLIENT_ID)
+const crypto = require('crypto')
 
 const authService = {
   signup: async (role, firstName, lastName, email, password, language) => {
@@ -42,13 +50,18 @@ const authService = {
       throw createError(401, INCORRECT_CREDENTIALS)
     }
 
-    const { _id, lastLoginAs, isFirstLogin, isEmailConfirmed } = user
+    const { _id, lastLoginAs, isFirstLogin, isEmailConfirmed, role } = user
 
     if (!isEmailConfirmed) {
       throw createError(401, EMAIL_NOT_CONFIRMED)
     }
 
-    const tokens = tokenService.generateTokens({ id: _id, role: lastLoginAs, isFirstLogin })
+    const tokens = tokenService.generateTokens({
+      id: _id,
+      role: lastLoginAs ?? role[0],
+      isFirstLogin,
+      lastLoginAs: lastLoginAs ? lastLoginAs : role[0],
+    })
     await tokenService.saveToken(_id, tokens.refreshToken, REFRESH_TOKEN)
 
     if (isFirstLogin) {
@@ -112,6 +125,46 @@ const authService = {
       firstName
     })
   },
+
+  googleAuth: async (idToken) => {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: GMAIL_CLIENT_ID,
+    })
+
+    const {
+      email,
+      given_name,
+      family_name,
+      iss,
+      email_verified,
+      sub,
+    } = ticket.getPayload()
+
+    if (iss !== 'accounts.google.com' && iss !== 'https://accounts.google.com') {
+      throw createError(422, INVALID_TOKEN_ISSUER)
+    }
+
+    if (!email_verified) {
+      throw createError(422, EMAIL_NOT_VERIFIED)
+    }
+
+    if (!sub) {
+      throw createError(422, MISSING_SUB_CLAIM)
+    }
+
+    let user = await getUserByEmail(email)
+
+    if (!user) {
+      const safeLastName = family_name || given_name || 'User'
+      const safePassword = crypto.randomBytes(32).toString('hex')
+
+      user = await createUser('student', given_name || 'Google', safeLastName, email, safePassword, 'en')
+
+      await privateUpdateUser(user.id, { isEmailConfirmed: true })
+    }
+
+    return authService.login(email, '', true)
   confirmEmail: async (confirmToken) => {
     const tokenData = tokenService.validateConfirmToken(confirmToken)
     const tokenFromDB = await tokenService.findToken(confirmToken, CONFIRM_TOKEN)

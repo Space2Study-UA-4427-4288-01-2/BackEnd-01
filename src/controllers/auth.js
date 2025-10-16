@@ -6,6 +6,11 @@ const {
 const {
   tokenNames: { REFRESH_TOKEN, ACCESS_TOKEN }
 } = require('~/consts/auth')
+const {
+  MISSING_TOKEN,
+  TOKEN_NOT_VALID,
+  AUTHENTICATION_FAILED,
+} = require('~/consts/errors')
 
 const COOKIE_OPTIONS = {
   maxAge: oneDayInMs,
@@ -13,6 +18,38 @@ const COOKIE_OPTIONS = {
   secure: true,
   sameSite: 'none',
   domain: COOKIE_DOMAIN
+}
+
+const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body
+
+    if (!token) {
+      return res.status(422).json(MISSING_TOKEN)
+    }
+
+    const tokens = await authService.googleAuth(token.credential)
+
+    res.cookie(ACCESS_TOKEN, tokens.accessToken, COOKIE_OPTIONS)
+    res.cookie(REFRESH_TOKEN, tokens.refreshToken, COOKIE_OPTIONS)
+
+    delete tokens.refreshToken
+
+    res.status(200).json(tokens)
+  } catch (error) {
+    if (error.status === 422) {
+      return res.status(422).json({
+        error: error.code || 'INVALID_TOKEN',
+        message: error.message
+      })
+    }
+
+    if (error.message && (error.message.includes('Token used too early') || error.message.includes('Invalid token'))) {
+      return res.status(422).json(TOKEN_NOT_VALID)
+    }
+
+    return res.status(401).json(AUTHENTICATION_FAILED)
+  }
 }
 
 const signup = async (req, res) => {
@@ -100,5 +137,6 @@ module.exports = {
   refreshAccessToken,
   sendResetPasswordEmail,
   updatePassword,
+  googleAuth,
   confirmEmail
 }
