@@ -1,0 +1,23 @@
+openapi: 3.0.0
+info:
+  title: Space2Study-UA API
+  version: "1.0.0"
+  description: "API docs for Space2Study UA"
+servers:
+  - url: http://localhost:8080
+    description: Local dev
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok

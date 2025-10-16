@@ -11,6 +11,7 @@ const {
   INVALID_TOKEN_ISSUER,
   EMAIL_NOT_VERIFIED,
   MISSING_SUB_CLAIM,
+  BAD_CONFIRM_TOKEN,
 } = require('~/consts/errors')
 const emailSubject = require('~/consts/emailSubject')
 const {
@@ -29,6 +30,7 @@ const authService = {
     const confirmToken = tokenService.generateConfirmToken({ id: user._id, role })
     await tokenService.saveToken(user._id, confirmToken, CONFIRM_TOKEN)
     await emailService.sendEmail(email, emailSubject.EMAIL_CONFIRMATION, language, { confirmToken, email, firstName })
+
     return {
       userId: user._id,
       userEmail: user.email
@@ -163,6 +165,30 @@ const authService = {
     }
 
     return authService.login(email, '', true)
+  confirmEmail: async (confirmToken) => {
+    const tokenData = tokenService.validateConfirmToken(confirmToken)
+    const tokenFromDB = await tokenService.findToken(confirmToken, CONFIRM_TOKEN)
+
+    if (!tokenData || !tokenFromDB) {
+      throw createError(400, BAD_CONFIRM_TOKEN)
+    }
+
+    const { id: userId } = tokenData
+    const user = await getUserById(userId)
+
+    if (!user) {
+      throw createError(404, USER_NOT_FOUND)
+    }
+
+    if (user.isEmailConfirmed) {
+      return { userId, email: user.email, alreadyConfirmed: true }
+    }
+
+    await privateUpdateUser(userId, { isEmailConfirmed: true })
+
+    await tokenService.removeConfirmToken(userId)
+
+    return { userId, email: user.email, confirmed: true }
   }
 }
 
