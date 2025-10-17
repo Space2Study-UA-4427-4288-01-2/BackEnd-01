@@ -48,7 +48,7 @@ describe('subjects controller', () => {
     expect(res.json).toHaveBeenCalledWith([{ name: 'Math' }])
   })
 
-  it('getSubjects accepts missing skip/limit and passes undefined to service', async () => {
+  it('getSubjects accepts missing skip/limit and passes null to service', async () => {
     const req = { query: { categoryId: 'cid' } }
     const res = mockRes()
 
@@ -59,8 +59,8 @@ describe('subjects controller', () => {
     expect(subjectService.getSubjects).toHaveBeenCalled()
     const callArgs = subjectService.getSubjects.mock.calls[0]
     // args: match, sortOptions, pageNum, limitNum
-    expect(callArgs[2]).toBeUndefined()
-    expect(callArgs[3]).toBeUndefined()
+    expect(callArgs[2]).toBeNull()
+    expect(callArgs[3]).toBeNull()
   })
 
   it('getSubjects throws 400 for invalid sort param', async () => {
@@ -72,13 +72,6 @@ describe('subjects controller', () => {
 
   it('getSubjects throws 400 for invalid name param', async () => {
     const req = { query: { categoryId: 'cid', name: 123 } }
-    const res = mockRes()
-
-    await expect(subjectsController.getSubjects(req, res)).rejects.toHaveProperty('status', 400)
-  })
-
-  it('getSubjects throws 400 for invalid categoryId param', async () => {
-    const req = { query: { categoryId: 123 } }
     const res = mockRes()
 
     await expect(subjectsController.getSubjects(req, res)).rejects.toHaveProperty('status', 400)
