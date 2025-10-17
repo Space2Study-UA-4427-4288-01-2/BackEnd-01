@@ -35,7 +35,7 @@ async function getSubjectsNames(req, res) {
   const categoryId = req.query?.categoryId
 
   if (categoryId && typeof categoryId !== 'string') {
-    return res.status(400).json({ error: 'categoryId must be a string' })
+    throw createBadRequestError()
   }
 
   const match = getMatchOptions({ category: categoryId })
