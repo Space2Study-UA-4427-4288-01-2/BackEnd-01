@@ -53,7 +53,7 @@ describe('error middleware (unit)', () => {
     errorMiddleware(err, null, res, null)
 
     expect(res.status).toHaveBeenCalledWith(500)
-    expect(res.json.mock.calls[0][0]).toMatchObject({
+    expect(res.json).toHaveBeenCalledWith({
       status: 500,
       code: INTERNAL_SERVER_ERROR.code,
       message: 'boom'
@@ -65,6 +65,6 @@ describe('error middleware (unit)', () => {
     errorMiddleware(err, null, res, null)
 
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json.mock.calls[0][0]).toEqual({ status: 400, code: 'BAD_REQUEST', message: 'bad' })
+    expect(res.json).toHaveBeenCalledWith(err)
   })
 })
