@@ -60,17 +60,17 @@ paths:
                 items:
                   type: string
                   example: Category name
-  /category/:id:
+  /category/{id}:
     get:
       summary: Category by id
       parameters:
-        - name: categoryId
+        - name: id
           in: path
           required: true
           description: "ID of the category"
           allowEmptyValue: false
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: OK
