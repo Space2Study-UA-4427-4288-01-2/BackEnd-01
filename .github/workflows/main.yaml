@@ -68,7 +68,7 @@ jobs:
           " > .env.local
 
       - name: 'Run Tests'
-        run: npm run test
+        run: npm run test:ci
         env:
           CI: true
           NODE_OPTIONS: --max_old_space_size=4096
