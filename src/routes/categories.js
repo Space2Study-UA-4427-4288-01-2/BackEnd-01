@@ -14,6 +14,7 @@ const params = [{ model: Category, idName: 'id' }]
 router.use(authMiddleware)
 router.param('id', idValidation)
 
+router.get('/', asyncWrapper(categoryController.getCategories))
 router.get('/names', asyncWrapper(categoryController.getCategoryNames))
 router.get('/:id', isEntityValid({ params }), asyncWrapper(categoryController.getCategoryById))
 

@@ -165,6 +165,8 @@ const authService = {
     }
 
     return authService.login(email, '', true)
+  },
+
   confirmEmail: async (confirmToken) => {
     const tokenData = tokenService.validateConfirmToken(confirmToken)
     const tokenFromDB = await tokenService.findToken(confirmToken, CONFIRM_TOKEN)
