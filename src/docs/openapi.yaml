@@ -34,6 +34,10 @@ paths:
                 items:
                   type: object
                   properties:
+                    id:
+                      type: string
+                      example: '1'
+                      required: true
                     name:
                       type: string
                       example: Category name
@@ -58,8 +62,15 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
-                  example: Category name
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: 'Category'
+                    id:
+                      type: string
+                      required: true
+                      example: '1'
   /category/{id}:
     get:
       summary: Category by id
@@ -79,6 +90,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
+                    example: '1'
+                    required: true
                   name:
                     type: string
                     example: Category name
