@@ -21,3 +21,355 @@ paths:
                   status:
                     type: string
                     example: ok
+
+  /subjects/:
+    get:
+      tags: [Subjects]
+      summary: Get subjects
+      description: Returns a paginated list of subjects with optional filters and sorting.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: Resources category ObjectId to filter subjects
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Case-insensitive name search substring
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"updatedAt"}'
+          description: JSON string specifying sort order and field
+      responses:
+        '200':
+          description: List of subjects with total count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectList'
+        '400':
+          description: Bad request (invalid query params)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Subjects]
+      summary: Create a subject (Admin only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreate'
+      responses:
+        '201':
+          description: Created subject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Validation or duplicate key error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subjects/names:
+    get:
+      tags: [Subjects]
+      summary: Get subject names
+      description: Returns a list of subject names, optionally filtered by category.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: Resources category ObjectId to filter subjects
+      responses:
+        '200':
+          description: Array of subject names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectName'
+        '400':
+          description: Bad request (invalid query params)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subjects/{id}:
+    get:
+      tags: [Subjects]
+      summary: Get subject by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      responses:
+        '200':
+          description: Subject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '400':
+          description: Bad request (invalid id format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Subjects]
+      summary: Update a subject (Admin only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectUpdate'
+      responses:
+        '204':
+          description: Updated successfully (no content)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Subjects]
+      summary: Delete a subject (Admin only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      responses:
+        '204':
+          description: Deleted successfully (no content)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+  schemas:
+    Subject:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Subject ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Mathematics
+        category:
+          type: string
+          description: ResourcesCategory ObjectId
+          example: 64a7f6d3c9a1b2f3e0d1c2b3
+        totalOffers:
+          type: object
+          properties:
+            student:
+              type: integer
+              minimum: 0
+              example: 0
+            tutor:
+              type: integer
+              minimum: 0
+              example: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SubjectCreate:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+          example: Physics
+        category:
+          type: string
+          description: ResourcesCategory ObjectId
+          example: 64a7f6d3c9a1b2f3e0d1c2b3
+
+    SubjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Advanced Physics
+        category:
+          type: string
+          description: ResourcesCategory ObjectId
+          example: 64a7f6d3c9a1b2f3e0d1c2b3
+
+    SubjectName:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Chemistry
+
+    SubjectList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subject'
+        count:
+          type: integer
+          example: 42
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 401
+        code:
+          type: string
+          example: UNAUTHORIZED
+        message:
+          type: string
+          example: The requested URL requires user authorization.
