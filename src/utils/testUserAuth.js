@@ -14,7 +14,7 @@ const testUserAuthentication = async (app, overrides = {}) => {
     email: uniqueEmail,
     password: 'Qwerty123@',
     nativeLanguage: 'English',
-    FAQ: { student: [{ question: 'question1', answer: 'answer1' }] },
+    FAQ: { [roleValue[0]]: [{ question: 'question1', answer: 'answer1' }] },
     isEmailConfirmed: true,
     lastLoginAs: roleValue[0]
   }
@@ -24,6 +24,10 @@ const testUserAuthentication = async (app, overrides = {}) => {
   await User.create(userData)
 
   const loginUserResponse = await app.post('/auth/login').send({ email: userData.email, password: userData.password })
+
+  if (loginUserResponse.status !== 200 || !loginUserResponse.body.accessToken) {
+    throw new Error(`Login failed: ${loginUserResponse.status} - ${JSON.stringify(loginUserResponse.body)}`)
+  }
 
   return loginUserResponse.body.accessToken
 }
