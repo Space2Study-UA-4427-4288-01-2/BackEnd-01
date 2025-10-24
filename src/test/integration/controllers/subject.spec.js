@@ -231,7 +231,7 @@ describe('Subject controller - integration', () => {
         expect(names).toEqual(['Mathematics', 'Music'])
       })
 
-      it('supports name substring filter (case-sensitive per implementation)', async () => {
+      it('supports name substring filter (case-insensitive per implementation)', async () => {
         const res = await app.get(endpointUrl).query({ name: 'Mat' })
         expect(res.statusCode).toBe(200)
         const names = res.body.items.map((i) => i.name)
