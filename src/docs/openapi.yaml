@@ -21,6 +21,92 @@ paths:
                   status:
                     type: string
                     example: ok
+  /category:
+    get:
+      summary: Categories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: '1'
+                      required: true
+                    name:
+                      type: string
+                      example: Category name
+                      required: true
+                    appearance:
+                      type: object
+                      properties:
+                        icon:
+                          type: string
+                          example: mocked-path-to-icon
+                        color:
+                          type: string
+                          example: '#66C42C'
+  /category/names:
+    get:
+      summary: Category names
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: 'Category'
+                    id:
+                      type: string
+                      required: true
+                      example: '1'
+  /category/{id}:
+    get:
+      summary: Category by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "ID of the category"
+          allowEmptyValue: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '1'
+                    required: true
+                  name:
+                    type: string
+                    example: Category name
+                    required: true
+                  appearance:
+                    type: object
+                    properties:
+                      icon:
+                        type: string
+                        example: mocked-path-to-icon
+                      color:
+                        type: string
+                        example: '#66C42C'
 
   /subjects/:
     get:
@@ -244,96 +330,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: accessToken
-  schemas:
-    Subject:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Subject ObjectId
-          example: 507f1f77bcf86cd799439011
-        name:
-          type: string
-          example: Mathematics
-        category:
-          type: string
-          description: ResourcesCategory ObjectId
-          example: 64a7f6d3c9a1b2f3e0d1c2b3
-        totalOffers:
-          type: object
-          properties:
-            student:
-              type: integer
-              minimum: 0
-              example: 0
-            tutor:
-              type: integer
-              minimum: 0
-              example: 0
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    SubjectCreate:
-      type: object
-      required: [name, category]
-      properties:
-        name:
-          type: string
-          example: Physics
-        category:
-          type: string
-          description: ResourcesCategory ObjectId
-          example: 64a7f6d3c9a1b2f3e0d1c2b3
-
-    SubjectUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-          example: Advanced Physics
-        category:
-          type: string
-          description: ResourcesCategory ObjectId
-          example: 64a7f6d3c9a1b2f3e0d1c2b3
-
-    SubjectName:
-      type: object
-      properties:
-        name:
-          type: string
-          example: Chemistry
-
-    SubjectList:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Subject'
-        count:
-          type: integer
-          example: 42
-
-    Error:
-      type: object
-      properties:
-        status:
-          type: integer
-          example: 401
-        code:
-          type: string
-          example: UNAUTHORIZED
-        message:
-          type: string
-          example: The requested URL requires user authorization.
