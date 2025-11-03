@@ -118,7 +118,7 @@ paths:
           name: categoryId
           schema:
             type: string
-          description: Resources category ObjectId to filter subjects
+          description: Category ObjectId to filter subjects
         - in: query
           name: name
           schema:
@@ -203,7 +203,7 @@ paths:
           name: categoryId
           schema:
             type: string
-          description: Resources category ObjectId to filter subjects
+          description: Category ObjectId to filter subjects
       responses:
         '200':
           description: Array of subject names
