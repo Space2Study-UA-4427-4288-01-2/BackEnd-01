@@ -7,24 +7,25 @@ const { createBadRequestError } = require('~/utils/errorsHelper')
 const getCategories = async (req, res) => {
   const { name, skip, limit, sort } = req.query
 
-  if (skip && Number.isNaN(Number(skip))) {
-    throw createBadRequestError('skip must be a number')
+  if (skip !== undefined && (Number.isNaN(Number(skip)) || Number(skip) < 0)) {
+    throw createBadRequestError()
   }
-  if (limit && Number.isNaN(Number(limit))) {
-    throw createBadRequestError('limit must be a number')
+  if (limit !== undefined && (Number.isNaN(Number(limit)) || Number(limit) < 1)) {
+    throw createBadRequestError()
   }
-  if (sort && typeof sort !== 'string') {
-    throw createBadRequestError('sort must be a string')
-  }
-  if (name && typeof name !== 'string') {
-    throw createBadRequestError('name must be a string')
+  if (sort !== undefined) {
+    try {
+      JSON.parse(sort)
+    } catch {
+      throw createBadRequestError()
+    }
   }
 
-  const match = getMatchOptions({ name: getRegex(name) })
+  const match = getMatchOptions({ name: name ? getRegex(name) : undefined })
   const sortOptions = getSortOptions(sort)
 
-  const skipNum = skip ? parseInt(skip, 10) : null
-  const limitNum = limit ? parseInt(limit, 10) : null
+  const skipNum = skip ? Number(skip) : null
+  const limitNum = limit ? Number(limit) : null
 
   const categories = await categoryService.getCategories(match, sortOptions, skipNum, limitNum)
 
