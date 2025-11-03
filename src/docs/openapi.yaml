@@ -21,7 +21,7 @@ paths:
                   status:
                     type: string
                     example: ok
-  /category:
+  /categories:
     get:
       summary: Categories
       responses:
@@ -51,7 +51,7 @@ paths:
                         color:
                           type: string
                           example: '#66C42C'
-  /category/names:
+  /categories/names:
     get:
       summary: Category names
       responses:
@@ -71,7 +71,7 @@ paths:
                       type: string
                       required: true
                       example: '1'
-  /category/{id}:
+  /categories/{id}:
     get:
       summary: Category by id
       parameters:
