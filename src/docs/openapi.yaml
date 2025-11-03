@@ -24,6 +24,30 @@ paths:
   /categories:
     get:
       summary: Categories
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Case-insensitive name search substring
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"name"}'
+          description: JSON string specifying sort order and field
       responses:
         '200':
           description: OK
