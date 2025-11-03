@@ -25,6 +25,10 @@ const lessonService = {
   updateLesson: async (id, updateData) => {
     const lesson = await Lesson.findById(id).exec()
 
+    if (!lesson) {
+      throw createNotFoundError('Lesson not found')
+    }
+
     for (const field in updateData) {
       lesson[field] = updateData[field]
     }

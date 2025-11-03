@@ -272,15 +272,19 @@ components:
     Error:
       type: object
       properties:
+        code:
+          type: string
+          example: BAD_REQUEST
         message:
           type: string
           example: Invalid request parameters
-        statusCode:
+        status:
           type: integer
           example: 400
       required:
+        - code
         - message
-        - statusCode
+        - status
     Lesson:
       type: object
       properties:

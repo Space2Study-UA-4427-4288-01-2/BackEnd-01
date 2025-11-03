@@ -53,9 +53,13 @@ async function getLessonById(req, res) {
 }
 
 async function createLesson(req, res) {
-  const { title, description, attachments, category } = req.body || {}
+  let { title, description, attachments, category } = req.body || {}
 
-  if (!title || typeof title !== 'string') {
+  if (typeof title !== 'string') {
+    throw createBadRequestError('title must be a non-empty string')
+  }
+  title = title.trim()
+  if (!title) {
     throw createBadRequestError('title must be a non-empty string')
   }
 
@@ -77,7 +81,7 @@ async function createLesson(req, res) {
     }
   }
 
-  const data = { title: title.trim(), description, attachments, category }
+  const data = { title, description, attachments, category }
   const created = await lessonService.createLesson(data)
 
   res.status(201).json(created)
