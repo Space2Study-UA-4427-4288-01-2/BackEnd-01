@@ -30,27 +30,34 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      example: '1'
-                      required: true
-                    name:
-                      type: string
-                      example: Category name
-                      required: true
-                    appearance:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
                       type: object
                       properties:
-                        icon:
+                        id:
                           type: string
-                          example: mocked-path-to-icon
-                        color:
+                          example: '1'
+                          required: true
+                        name:
                           type: string
-                          example: '#66C42C'
+                          example: Category name
+                          required: true
+                        appearance:
+                          type: object
+                          properties:
+                            icon:
+                              type: string
+                              example: mocked-path-to-icon
+                            color:
+                              type: string
+                              example: '#66C42C'
+                  count:
+                    type: integer
+                    example: 42
+                    description: Total number of categories matching the filter
   /categories/names:
     get:
       summary: Category names
