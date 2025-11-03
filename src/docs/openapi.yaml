@@ -21,12 +21,107 @@ paths:
                   status:
                     type: string
                     example: ok
-  /category:
+  /categories:
     get:
       summary: Categories
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Case-insensitive name search substring
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"name"}'
+          description: JSON string specifying sort order and field
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: '1'
+                          required: true
+                        name:
+                          type: string
+                          example: Category name
+                          required: true
+                        appearance:
+                          type: object
+                          properties:
+                            icon:
+                              type: string
+                              example: mocked-path-to-icon
+                            color:
+                              type: string
+                              example: '#66C42C'
+                  count:
+                    type: integer
+                    example: 42
+                    description: Total number of categories matching the filter
+  /categories/names:
+    get:
+      summary: Get lessons
+      description: Returns a paginated list of lessons with optional filters and sorting. Public.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Resources category ObjectId to filter lessons
+        - in: query
+          name: title
+          schema:
+            type: string
+            example: Algebra
+          description: Title substring filter
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"title"}'
+          description: JSON string specifying sort order and field
+      responses:
+        '200':
+          description: List of lessons with total count
           content:
             application/json:
               schema:
@@ -34,22 +129,274 @@ paths:
                 items:
                   type: object
                   properties:
-                    id:
-                      type: string
-                      example: '1'
                     name:
                       type: string
-                      example: Category name
-                    appearance:
-                      type: object
-                      properties:
-                        icon:
-                          type: string
-                          example: mocked-path-to-icon
-                        color:
-                          type: string
-                          example: '#66C42C'
+                      example: 'Category'
+                    id:
+                      type: string
+                      required: true
+                      example: '1'
+  /categories/{id}:
+    get:
+      summary: Get lesson by id
+      description: Returns a single lesson by its id. Public.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Lesson ObjectId
+      responses:
+        '200':
+          description: Single lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '1'
+                    required: true
+                  name:
+                    type: string
+                    example: Category name
+                    required: true
+                  appearance:
+                    type: object
+                    properties:
+                      icon:
+                        type: string
+                        example: mocked-path-to-icon
+                      color:
+                        type: string
+                        example: '#66C42C'
 
+  /subjects/:
+    get:
+      tags: [Subjects]
+      summary: Get subjects
+      description: Returns a paginated list of subjects with optional filters and sorting.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: Category ObjectId to filter subjects
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Case-insensitive name search substring
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"updatedAt"}'
+          description: JSON string specifying sort order and field
+      responses:
+        '200':
+          description: List of subjects with total count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectList'
+        '400':
+          description: Bad request (invalid query params)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Subjects]
+      summary: Create a subject (Admin only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreate'
+      responses:
+        '201':
+          description: Created subject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Validation or duplicate key error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subjects/names:
+    get:
+      tags: [Subjects]
+      summary: Get subject names
+      description: Returns a list of subject names, optionally filtered by category.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: Category ObjectId to filter subjects
+      responses:
+        '200':
+          description: Array of subject names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectName'
+        '400':
+          description: Bad request (invalid query params)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subjects/{id}:
+    get:
+      tags: [Subjects]
+      summary: Get subject by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      responses:
+        '200':
+          description: Subject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '400':
+          description: Bad request (invalid id format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Subjects]
+      summary: Update a subject (Admin only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectUpdate'
+      responses:
+        '204':
+          description: Updated successfully (no content)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Subjects]
+      summary: Delete a subject (Admin only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Subject ObjectId
+      responses:
+        '204':
+          description: Deleted successfully (no content)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
   /lessons/:
     get:
       summary: Get lessons
@@ -261,100 +608,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: accessToken
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: BAD_REQUEST
-        message:
-          type: string
-          example: Invalid request parameters
-        status:
-          type: integer
-          example: 400
-      required:
-        - code
-        - message
-        - status
-    Lesson:
-      type: object
-      properties:
-        _id:
-          type: string
-          example: 507f1f77bcf86cd799439011
-        title:
-          type: string
-          example: Algebra Basics
-        description:
-          type: string
-          example: Introduction to algebraic expressions
-        attachments:
-          type: array
-          items:
-            type: string
-            description: Attachment ObjectId
-            example: 64a7f6d3c9a1b2f3e0d1c2b3
-        category:
-          type: string
-          description: Category ObjectId
-          example: 64a7f6d3c9a1b2f3e0d1c2b3
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    LessonCreate:
-      type: object
-      required:
-        - title
-        - category
-      properties:
-        title:
-          type: string
-          example: Algebra Basics
-        description:
-          type: string
-          example: Introduction to algebraic expressions
-        attachments:
-          type: array
-          items:
-            type: string
-            description: Attachment ObjectId
-        category:
-          type: string
-          description: Category ObjectId
-    LessonUpdate:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        attachments:
-          type: array
-          items:
-            type: string
-        category:
-          type: string
-
-    LessonList:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Lesson'
-        count:
-          type: integer
-          example: 42
