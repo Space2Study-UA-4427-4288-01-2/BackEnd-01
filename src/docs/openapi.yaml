@@ -84,10 +84,44 @@ paths:
                     description: Total number of categories matching the filter
   /categories/names:
     get:
-      summary: Category names
+      summary: Get lessons
+      description: Returns a paginated list of lessons with optional filters and sorting. Public.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Resources category ObjectId to filter lessons
+        - in: query
+          name: title
+          schema:
+            type: string
+            example: Algebra
+          description: Title substring filter
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"title"}'
+          description: JSON string specifying sort order and field
       responses:
         '200':
-          description: OK
+          description: List of lessons with total count
           content:
             application/json:
               schema:
@@ -104,18 +138,19 @@ paths:
                       example: '1'
   /categories/{id}:
     get:
-      summary: Category by id
+      summary: Get lesson by id
+      description: Returns a single lesson by its id. Public.
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
-          description: "ID of the category"
-          allowEmptyValue: false
           schema:
             type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Lesson ObjectId
       responses:
         '200':
-          description: OK
+          description: Single lesson
           content:
             application/json:
               schema:
@@ -357,6 +392,218 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /lessons/:
+    get:
+      summary: Get lessons
+      description: Returns a paginated list of lessons with optional filters and sorting. Public.
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Resources category ObjectId to filter lessons
+        - in: query
+          name: title
+          schema:
+            type: string
+            example: Algebra
+          description: Title substring filter
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+          description: Max number of items to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: '{"order":"asc","orderBy":"title"}'
+          description: JSON string specifying sort order and field
+      responses:
+        '200':
+          description: List of lessons with total count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonList'
+        '400':
+          description: Bad request (invalid query params)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a lesson
+      description: Create a new lesson. Tutor or Admin.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonCreate'
+            example:
+              title: Linear Algebra
+              description: Vectors, matrices, and eigenvalues.
+              attachments:
+                - 64a7f6d3c9a1b2f3e0d1c2b3
+                - 64a7f6d3c9a1b2f3e0d1c2b4
+              category: 64a7f6d3c9a1b2f3e0d1c2f9
+      responses:
+        '201':
+          description: Lesson created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '400':
+          description: Bad request (invalid body)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Tutor or Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /lessons/{id}:
+    get:
+      summary: Get lesson by id
+      description: Returns a single lesson by its id. Public.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Lesson ObjectId
+      responses:
+        '200':
+          description: Single lesson
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '400':
+          description: Bad request (invalid id format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete lesson
+      description: Delete a lesson by id. Tutor or Admin.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Lesson ObjectId
+      responses:
+        '204':
+          description: Deleted successfully (no content)
+        '400':
+          description: Bad request (invalid id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Tutor or Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lesson not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      summary: Update lesson
+      description: Update fields of a lesson by id. Tutor or Admin.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 64a7f6d3c9a1b2f3e0d1c2b3
+          description: Lesson ObjectId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonUpdate'
+            example:
+              title: Linear Algebra (Updated)
+              description: Updated description
+              attachments:
+                - 64a7f6d3c9a1b2f3e0d1c2b4
+              category: 64a7f6d3c9a1b2f3e0d1c2f9
+      responses:
+        '204':
+          description: Updated successfully (no content)
+        '400':
+          description: Bad request (invalid body or id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (Tutor or Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lesson not found
           content:
             application/json:
               schema:

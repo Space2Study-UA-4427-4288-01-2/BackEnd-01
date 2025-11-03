@@ -9,6 +9,7 @@ const resourcesCategory = require('~/routes/resourcesCategory')
 const offer = require('~/routes/offer')
 const subjects = require('~/routes/subject')
 const categories = require('~/routes/categories')
+const lesson = require('~/routes/lesson')
 
 router.use('/auth', auth)
 router.use('/users', user)
@@ -19,5 +20,6 @@ router.use('/resources-categories', resourcesCategory)
 router.use('/offers', offer)
 router.use('/subjects', subjects)
 router.use('/categories', categories)
+router.use('/lessons', lesson)
 
 module.exports = router
