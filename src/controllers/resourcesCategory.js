@@ -1,7 +1,6 @@
 const resourcesCategoryService = require('~/services/resourcesCategory')
 const getMatchOptions = require('~/utils/getMatchOptions')
 const getSortOptions = require('~/utils/getSortOptions')
-const getRegex = require('~/utils/getRegex')
 
 const createResourcesCategory = async (req, res) => {
   const { id: author } = req.user
@@ -16,7 +15,9 @@ const getResourcesCategories = async (req, res) => {
   const { id: author } = req.user
   const { name, sort, skip, limit } = req.query
 
-  const match = getMatchOptions({ author, name: getRegex(name) })
+  const escapedName = name?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const nameRegex = escapedName ? { $regex: escapedName, $options: 'i' } : undefined
+  const match = getMatchOptions({ author, name: nameRegex })
   const sortOptions = getSortOptions(sort)
 
   const resourcesCategories = await resourcesCategoryService.getResourcesCategories(
