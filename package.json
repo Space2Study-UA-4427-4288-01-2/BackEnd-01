@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --maxWorkers=1",
+    "test:ci": "jest --ci",
     "start": "nodemon src/app.js --legacy-watch",
     "lint": "eslint . --fix",
     "prepare": "husky install",

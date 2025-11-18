@@ -96,6 +96,7 @@ describe('AuthService — Google login', () => {
     expect(tokenService.generateTokens).toHaveBeenCalledWith({
       id: user._id,
       role: user.lastLoginAs,
+      lastLoginAs: 'user',
       isFirstLogin: true
     })
     expect(tokenService.saveToken).toHaveBeenCalledWith(user._id, 'refresh_token_mock', 'refreshToken')
